@@ -1,10 +1,9 @@
 <script lang="ts" setup>
 import {
   GoogleAuthProvider,
-  getRedirectResult,
   signInAnonymously,
+  signInWithEmailAndPassword,
   signInWithPopup,
-  signInWithRedirect,
   signOut,
 } from 'firebase/auth';
 import {
@@ -17,40 +16,60 @@ import { ref, onMounted } from 'vue';
 definePageMeta({
   title: 'Login',
   linkTitle: 'Login',
-  order: 2,
+  order: 0,
 });
 
 const auth = useFirebaseAuth()!; // only exists on client side
 const user = useCurrentUser();
 const isUserLoaded = useIsCurrentUserLoaded();
 
-function signinRedirect() {
-  signInWithRedirect(auth, googleAuthProvider).catch((reason) => {
-    console.error('Failed signinRedirect', reason);
-    error.value = reason;
-  });
-}
+const toast = useToast();
 
-function signinPopup() {
+const email = ref('');
+const password = ref('');
+
+function loginWithEmailAndPassword() {
   error.value = null;
-  signInWithPopup(auth, googleAuthProvider).catch((reason) => {
-    console.error('Failed signinPopup', reason);
-    error.value = reason;
-  });
+  signInWithEmailAndPassword(auth, email.value, password.value)
+    .then(() => {
+      navigateTo('/');
+      toast.add({
+        title: 'Logged in successfully',
+        timeout: 3000,
+      });
+    })
+    .catch((reason) => {
+      toast.add({
+        title: 'Failed to login',
+        description: reason.message,
+        timeout: 3000,
+      });
+      console.error('Failed signInWithEmailAndPassword', reason);
+      error.value = reason;
+    });
 }
 
-// display errors if any
+async function signinPopup() {
+  error.value = null;
+  try {
+    await signInWithPopup(auth, googleAuthProvider);
+    toast.add({
+      title: 'Logged in successfully',
+      timeout: 3000,
+    });
+  } catch (reason) {
+    toast.add({
+      title: 'Failed to login with Google',
+      timeout: 3000,
+    });
+    console.error('Failed to sign in with Google', reason);
+    error.value = reason as Error;
+  }
+}
+
 const error = ref<Error | null>(null);
-// only on client side
-onMounted(() => {
-  getRedirectResult(auth).catch((reason) => {
-    console.error('Failed redirect result', reason);
-    error.value = reason;
-  });
-});
 
 const route = useRoute();
-const toast = useToast();
 
 onMounted(() => {
   if (route.query.redirect) {
@@ -60,6 +79,14 @@ onMounted(() => {
     });
   }
 });
+
+// Redirect to the home page when the user logs in,
+// or if the user is already logged in.
+watchEffect(() => {
+  if (user.value && auth.currentUser) {
+    navigateTo('/');
+  }
+});
 </script>
 
 <script lang="ts">
@@ -67,8 +94,8 @@ export const googleAuthProvider = new GoogleAuthProvider();
 </script>
 
 <template>
-  <main>
-    <h2>Login</h2>
+  <main class="p-4 flex flex-col justify-center items-center">
+    <h2 class="mb-3">{{ $t('login') }}</h2>
 
     <ClientOnly>
       <p v-if="!isUserLoaded">Loading</p>
@@ -92,22 +119,26 @@ export const googleAuthProvider = new GoogleAuthProvider();
     </template>
 
     <template v-else>
-      <div class="w-80">
-        <UButton @click="signinRedirect()"
-          >SignIn with Google (redirect)</UButton
-        >
-        <UButton @click="signinPopup()">SignIn with Google (popup)</UButton>
+      <div class="w-80 flex flex-col gap-4">
+        <UInput
+          v-model="email"
+          label="Email"
+          type="email"
+          placeholder="Enter your email"
+        />
+        <UInput
+          v-model="password"
+          label="Password"
+          type="password"
+          placeholder="Enter your password"
+        />
+        <UButton @click="loginWithEmailAndPassword()">Login</UButton>
+        <UButton @click="signinPopup()">SignIn with Google</UButton>
         <UButton @click="signInAnonymously(auth)">SignIn Anonymously</UButton>
       </div>
     </template>
 
     <UAlert v-if="error" :title="error.message" />
-    <div v-else-if="route.query.redirect" class="message-box">
-      <p>
-        Please login to access <code>{{ route.query.redirect }}</code
-        >.
-      </p>
-    </div>
 
     <div>
       <p>Don't have an account?</p>

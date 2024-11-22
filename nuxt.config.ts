@@ -14,6 +14,7 @@ export default defineNuxtConfig({
     '@nuxtjs/tailwindcss',
     'nuxt-vuefire',
     '@nuxt/image',
+    '@nuxtjs/i18n',
   ],
   nitro: {
     prerender: {
@@ -23,6 +24,18 @@ export default defineNuxtConfig({
   },
   tailwindcss: {
     cssPath: '~/assets/css/tailwind.css',
+  },
+  colorMode: {
+    preference: 'system',
+    fallback: 'light',
+  },
+  i18n: {
+    vueI18n: './i18n.config.ts',
+    detectBrowserLanguage: {
+      useCookie: true,
+      cookieKey: 'i18n_redirected',
+      redirectOn: 'root',
+    },
   },
   vuefire: {
     auth: {

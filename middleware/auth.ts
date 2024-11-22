@@ -1,5 +1,3 @@
-import { getCurrentUser } from 'nuxt-vuefire/runtime/auth/composables.js';
-
 export default defineNuxtRouteMiddleware(async (to, _from) => {
   const user = await getCurrentUser();
 

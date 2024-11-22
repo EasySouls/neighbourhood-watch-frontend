@@ -3,6 +3,8 @@ const user = useCurrentUser();
 const auth = useFirebaseAuth();
 const router = useRouter();
 
+const { setLocale } = useI18n();
+
 const logout = () => {
   if (auth == null) return;
 
@@ -17,20 +19,46 @@ const logout = () => {
 const login = () => {
   router.push('/login');
 };
+
+const dropdownItems = [
+  [
+    {
+      label: 'Logout',
+      icon: 'i-heroicons-logout-20-solid',
+      click: logout,
+    },
+  ],
+  [
+    {
+      label: 'Profile',
+      icon: 'i-heroicons-user-20-solid',
+      click: () => router.push('/profile'),
+    },
+  ],
+  [
+    {
+      label: 'Hungarian',
+      click: () => setLocale('hu'),
+    },
+    {
+      label: 'English',
+      click: () => setLocale('en'),
+    },
+  ],
+];
 </script>
 
 <template>
   <header>
     <h1 class="title">Neighbourhood Watch</h1>
     <div v-if="user !== null && user !== undefined">
-      <p>Welcome, {{ user.displayName }}</p>
-      <UButton @click="logout">Logout</UButton>
-      <NuxtImg
-        :src="user.photoURL ? user.photoURL : undefined"
-        alt="User avatar"
-        width="50"
-        height="50"
-      />
+      <UDropdown :items="dropdownItems">
+        <UAvatar
+          :src="user.photoURL ? user.photoURL : undefined"
+          alt="Profile picture"
+          size="md"
+        />
+      </UDropdown>
     </div>
     <div v-else>
       <UButton @click="login">Login</UButton>

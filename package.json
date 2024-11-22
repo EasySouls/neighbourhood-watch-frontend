@@ -16,6 +16,7 @@
     "@nuxt/eslint": "^0.7.1",
     "@nuxt/image": "^1.8.1",
     "@nuxt/ui": "^2.19.2",
+    "@nuxtjs/i18n": "^9.0.0-rc.2",
     "@nuxtjs/tailwindcss": "^6.12.2",
     "firebase": "^11.0.2",
     "firebase-admin": "^13.0.1",
