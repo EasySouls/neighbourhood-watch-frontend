@@ -7,5 +7,11 @@ export default defineNuxtConfig({
       enabled: true,
     },
   },
-  modules: ['@nuxt/eslint', '@nuxt/ui', '@nuxtjs/tailwindcss'],
+  modules: ['@nuxt/eslint', '@nuxt/ui', '@nuxtjs/tailwindcss', 'nuxt-vuefire'],
+  vuefire: {
+    auth: {
+      enabled: true,
+    },
+    config: {},
+  },
 });

@@ -12,10 +12,15 @@
     "lint:fix": "eslint . --fix"
   },
   "dependencies": {
+    "@firebase/app-types": "^0.9.3",
     "@nuxt/eslint": "^0.7.1",
     "@nuxt/ui": "^2.19.2",
     "@nuxtjs/tailwindcss": "^6.12.2",
+    "firebase": "^11.0.2",
+    "firebase-admin": "^13.0.1",
+    "firebase-functions": "^6.1.1",
     "nuxt": "^3.14.1592",
+    "nuxt-vuefire": "^1.0.4",
     "vue": "latest",
     "vue-router": "latest"
   }
