@@ -12,7 +12,7 @@ import {
   useFirebaseAuth,
   useIsCurrentUserLoaded,
 } from 'vuefire';
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 
 definePageMeta({
   title: 'Login',
@@ -50,6 +50,16 @@ onMounted(() => {
 });
 
 const route = useRoute();
+const toast = useToast();
+
+onMounted(() => {
+  if (route.query.redirect) {
+    toast.add({
+      title: 'Please login to access ' + route.query.redirect,
+      timeout: 1500,
+    });
+  }
+});
 </script>
 
 <script lang="ts">

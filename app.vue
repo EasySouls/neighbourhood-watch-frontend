@@ -2,7 +2,11 @@
   <div>
     <NuxtRouteAnnouncer />
     <NuxtLayout>
-      <NuxtPage />
+      <UContainer>
+        <NuxtPage />
+      </UContainer>
+
+      <UNotifications />
     </NuxtLayout>
   </div>
 </template>
