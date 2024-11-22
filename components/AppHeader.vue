@@ -25,11 +25,16 @@ const login = () => {
     <div v-if="user !== null && user !== undefined">
       <p>Welcome, {{ user.displayName }}</p>
       <UButton @click="logout">Logout</UButton>
+      <NuxtImg
+        :src="user.photoURL ? user.photoURL : undefined"
+        alt="User avatar"
+        width="50"
+        height="50"
+      />
     </div>
     <div v-else>
       <UButton @click="login">Login</UButton>
     </div>
-    <UButton>Click me!</UButton>
   </header>
 </template>
 

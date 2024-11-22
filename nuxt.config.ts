@@ -8,12 +8,21 @@ export default defineNuxtConfig({
       enabled: true,
     },
   },
-  modules: ['@nuxt/eslint', '@nuxt/ui', '@nuxtjs/tailwindcss', 'nuxt-vuefire'],
+  modules: [
+    '@nuxt/eslint',
+    '@nuxt/ui',
+    '@nuxtjs/tailwindcss',
+    'nuxt-vuefire',
+    '@nuxt/image',
+  ],
   nitro: {
     prerender: {
       crawlLinks: true,
       failOnError: false,
     },
+  },
+  tailwindcss: {
+    cssPath: '~/assets/css/tailwind.css',
   },
   vuefire: {
     auth: {
