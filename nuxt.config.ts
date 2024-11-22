@@ -9,6 +9,12 @@ export default defineNuxtConfig({
     },
   },
   modules: ['@nuxt/eslint', '@nuxt/ui', '@nuxtjs/tailwindcss', 'nuxt-vuefire'],
+  nitro: {
+    prerender: {
+      crawlLinks: true,
+      failOnError: false,
+    },
+  },
   vuefire: {
     auth: {
       enabled: true,
