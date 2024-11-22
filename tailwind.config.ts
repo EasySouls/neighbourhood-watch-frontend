@@ -1,5 +1,6 @@
-/** @type {import('tailwindcss').Config} */
-export default {
+import type { Config } from 'tailwindcss';
+
+export default <Partial<Config>>{
   content: [],
   theme: {
     extend: {
@@ -16,6 +17,19 @@ export default {
           800: '#016538',
           900: '#0A5331',
           950: '#052e16',
+        },
+        blue: {
+          50: '#EFF6FF',
+          100: '#DBEAFE',
+          200: '#BFDBFE',
+          300: '#93C5FD',
+          400: '#60A5FA',
+          500: '#3B82F6',
+          600: '#2563EB',
+          700: '#1D4ED8',
+          800: '#1E40AF',
+          900: '#1E3A8A',
+          950: '#1E3A8A',
         },
       },
     },
