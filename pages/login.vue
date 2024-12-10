@@ -4,7 +4,6 @@ import {
   signInAnonymously,
   signInWithEmailAndPassword,
   signInWithPopup,
-  signOut,
 } from 'firebase/auth';
 import {
   useCurrentUser,
@@ -12,6 +11,11 @@ import {
   useIsCurrentUserLoaded,
 } from 'vuefire';
 import { ref, onMounted } from 'vue';
+import { doc, getFirestore, setDoc } from '@firebase/firestore';
+
+useHead({
+  title: 'Login',
+});
 
 definePageMeta({
   title: 'Login',
@@ -30,6 +34,12 @@ const password = ref('');
 
 function loginWithEmailAndPassword() {
   error.value = null;
+
+  if (!email.value || !password.value) {
+    error.value = new Error('Email and password are required');
+    return;
+  }
+
   signInWithEmailAndPassword(auth, email.value, password.value)
     .then(() => {
       navigateTo('/');
@@ -52,7 +62,18 @@ function loginWithEmailAndPassword() {
 async function signinPopup() {
   error.value = null;
   try {
-    await signInWithPopup(auth, googleAuthProvider);
+    const { user } = await signInWithPopup(auth, googleAuthProvider);
+    const db = getFirestore();
+    const userRef = doc(db, 'users', user.uid);
+    const firstName = user.displayName?.split(' ')[0];
+    const lastName = user.displayName?.split(' ')[1];
+    await setDoc(userRef, {
+      authId: user.uid,
+      email: user.email,
+      firstName: firstName || 'User',
+      lastName: lastName || '',
+      photoURL: user.photoURL,
+    });
     toast.add({
       title: 'Logged in successfully',
       timeout: 3000,
@@ -95,52 +116,38 @@ export const googleAuthProvider = new GoogleAuthProvider();
 
 <template>
   <main class="p-4 flex flex-col justify-center items-center">
-    <h2 class="mb-3">{{ $t('login') }}</h2>
+    <h1 class="mt-12 mb-8">{{ $t('login') }}</h1>
 
     <ClientOnly>
       <p v-if="!isUserLoaded">Loading</p>
     </ClientOnly>
 
-    <template v-if="user">
-      <div class="flex">
-        You are currently logged in as:
-        <NuxtImg
-          v-if="user.photoURL"
-          class="avatar"
-          :src="user.photoURL"
-          referrerpolicy="no-referrer"
-        />
-        <strong
-          >{{ user.isAnonymous ? '🥸' : '' }} {{ user.displayName }}.</strong
-        >
-      </div>
+    <div class="w-80 flex flex-col gap-4">
+      <UInput
+        v-model="email"
+        label="Email"
+        type="email"
+        placeholder="Enter your email"
+      />
+      <UInput
+        v-model="password"
+        label="Password"
+        type="password"
+        placeholder="Enter your password"
+      />
+      <UButton @click="loginWithEmailAndPassword()">Login</UButton>
+      <UButton @click="signinPopup()">Sign in with Google</UButton>
+      <UButton @click="signInAnonymously(auth)">Sign in anonymously</UButton>
 
-      <UButton @click="signOut(auth)">Logout</UButton>
-    </template>
+      <UAlert
+        v-if="error"
+        :title="error.message"
+        color="primary"
+        variant="outline"
+      />
+    </div>
 
-    <template v-else>
-      <div class="w-80 flex flex-col gap-4">
-        <UInput
-          v-model="email"
-          label="Email"
-          type="email"
-          placeholder="Enter your email"
-        />
-        <UInput
-          v-model="password"
-          label="Password"
-          type="password"
-          placeholder="Enter your password"
-        />
-        <UButton @click="loginWithEmailAndPassword()">Login</UButton>
-        <UButton @click="signinPopup()">SignIn with Google</UButton>
-        <UButton @click="signInAnonymously(auth)">SignIn Anonymously</UButton>
-      </div>
-    </template>
-
-    <UAlert v-if="error" :title="error.message" />
-
-    <div>
+    <div class="mt-8 flex flex-col items-center gap-2">
       <p>Don't have an account?</p>
       <NuxtLink to="/signup">Sign up</NuxtLink>
     </div>

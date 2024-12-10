@@ -2,6 +2,7 @@
 const user = useCurrentUser();
 const auth = useFirebaseAuth();
 const router = useRouter();
+const route = useRoute();
 
 const { setLocale } = useI18n();
 
@@ -60,7 +61,11 @@ const dropdownItems = [
         />
       </UDropdown>
     </div>
-    <div v-else>
+    <div
+      v-else-if="
+        user == null && route.path != '/login' && route.path != '/signup'
+      "
+    >
       <UButton @click="login">Login</UButton>
     </div>
   </header>
