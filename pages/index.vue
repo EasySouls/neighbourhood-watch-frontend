@@ -1,16 +1,19 @@
 <script setup lang="ts">
+import { useCivilGuard } from '~/composables/useCivilGuard';
+
 definePageMeta({
   middleware: 'auth',
 });
 
-const route = useRoute();
+const civilGuard = useCivilGuard();
 </script>
 
 <template>
-  <div>
-    <p>Current route: {{ route.path }}</p>
-    <a href="https://nuxt.com/docs/getting-started/routing" target="_blank"
-      >Learn more about Nuxt Routing</a
-    >
+  <div v-if="civilGuard">
+    <h1>{{ civilGuard.name }}</h1>
+  </div>
+  <div v-else>
+    <h1 class="pt-8 pb-4">Welcome</h1>
+    <p>Your user is not yet linked to a civil guard</p>
   </div>
 </template>
