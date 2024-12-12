@@ -6,6 +6,9 @@ export const useCivilGuard = (): Ref<CivilGuard | null> => {
   if (!user.value) return ref(null);
   if (!user.value.civilGuardId || !user.value.departmentId) return ref(null);
 
+  console.log('user.value.departmentId', user.value.departmentId);
+  console.log('user.value.civilGuardId', user.value.civilGuardId);
+
   const db = getFirestore();
   const docRef = doc(
     db,

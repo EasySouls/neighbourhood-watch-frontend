@@ -32,6 +32,7 @@ export interface Department {
   id: string;
   name: string;
   civilGuards: CivilGuard[];
+  depHeadId: string;
   duties: Duty[];
   createdAt: number;
   updatedAt: number;

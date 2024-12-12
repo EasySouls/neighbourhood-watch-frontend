@@ -1,8 +1,7 @@
 <script lang="ts" setup>
-import { getRedirectResult, signInWithEmailAndPassword } from 'firebase/auth';
-import { useFirebaseAuth } from 'vuefire';
 import { ref } from 'vue';
-import { doc, getFirestore, setDoc } from 'firebase/firestore';
+import { z } from 'zod';
+import type { FormSubmitEvent } from '#ui/types';
 
 definePageMeta({
   title: 'Sign Up',
@@ -10,51 +9,63 @@ definePageMeta({
   order: 2,
 });
 
-const auth = useFirebaseAuth()!; // only exists on client side
-
+const router = useRouter();
 const toast = useToast();
 
-const firstName = ref('');
-const lastName = ref('');
-const email = ref('');
-const password = ref('');
-const confirmPassword = ref('');
+const schema = z.object({
+  firstName: z.string().nonempty(),
+  lastName: z.string().nonempty(),
+  email: z.string().email(),
+  password: z.string().min(6),
+  confirmPassword: z.string().min(6),
+});
 
-async function signUpWithEmailAndPassword() {
+type Schema = z.infer<typeof schema>;
+
+const state = reactive({
+  firstName: '',
+  lastName: '',
+  email: '',
+  password: '',
+  confirmPassword: '',
+});
+
+async function signUpWithEmailAndPassword(event: FormSubmitEvent<Schema>) {
   error.value = null;
-  if (
-    !firstName.value ||
-    !lastName.value ||
-    !email.value ||
-    !password.value ||
-    !confirmPassword.value
-  ) {
+  const { firstName, lastName, email, password, confirmPassword } = event.data;
+
+  if (!firstName || !lastName || !email || !password || !confirmPassword) {
     error.value = new Error('Email and password are required');
     return;
   }
-  if (password.value !== confirmPassword.value) {
+  if (password !== confirmPassword) {
     error.value = new Error('Passwords do not match');
     return;
   }
   try {
-    const { user } = await signInWithEmailAndPassword(
-      auth,
-      email.value,
-      password.value
-    );
-    const db = getFirestore();
-    const userRef = doc(db, 'users', user.uid);
-    await setDoc(userRef, {
-      authId: user.uid,
-      email: email.value,
-      firstName: firstName.value,
-      lastName: lastName.value,
-      photoURL: user.photoURL,
+    const res = await fetch('https://localhost:7250/api/identity/register', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        email: email,
+        password: password,
+        firstName: firstName,
+        lastName: lastName,
+      }),
+      credentials: 'include',
     });
+    console.log(res);
+    if (!res.ok) {
+      const json = await res.json();
+      throw new Error(JSON.stringify(json) || 'Failed to sign up');
+    }
     toast.add({
-      title: 'Signed up successfully',
+      title: 'Signed up successfully! Log in to continue',
       timeout: 3000,
     });
+    router.push('/login');
   } catch (reason) {
     console.error('Failed to sign up', reason);
     error.value = reason as Error;
@@ -63,50 +74,47 @@ async function signUpWithEmailAndPassword() {
 
 // display errors if any
 const error = ref<Error | null>(null);
-
-// only on client side
-onMounted(() => {
-  getRedirectResult(auth).catch((reason) => {
-    console.error('Failed redirect result', reason);
-    error.value = reason;
-  });
-});
 </script>
 
 <template>
   <div class="p-4 flex flex-col justify-center items-center w-full">
     <h1 class="mt-12 mb-8">Sign Up</h1>
 
-    <div class="flex flex-col gap-4 w-80">
-      <UInput
-        v-model="firstName"
-        :label="$t('firstName')"
-        placeholder="Enter your first name"
-      />
-      <UInput
-        v-model="lastName"
-        :label="$t('lastName')"
-        placeholder="Enter your last name"
-      />
-      <UInput
-        v-model="email"
-        :label="$t('email')"
-        placeholder="Enter your email"
-      />
-      <UInput
-        v-model="password"
-        :label="$t('password')"
-        type="password"
-        placeholder="Enter your password"
-      />
-      <UInput
-        v-model="confirmPassword"
-        :label="$t('confirmPassword')"
-        type="password"
-        placeholder="Confirm your password"
-      />
+    <UForm
+      :schema="schema"
+      :state="state"
+      class="flex flex-col gap-4 w-80"
+      @submit="signUpWithEmailAndPassword"
+    >
+      <UFormGroup :label="$t('firstName')" name="firstName">
+        <UInput v-model="state.firstName" placeholder="Enter your first name" />
+      </UFormGroup>
 
-      <UButton @click="signUpWithEmailAndPassword">Sign Up</UButton>
+      <UFormGroup :label="$t('lastName')" name="lastName">
+        <UInput v-model="state.lastName" placeholder="Enter your last name" />
+      </UFormGroup>
+
+      <UFormGroup :label="$t('email')" name="email">
+        <UInput v-model="state.email" placeholder="Enter your email" />
+      </UFormGroup>
+
+      <UFormGroup :label="$t('password')" name="password">
+        <UInput
+          v-model="state.password"
+          type="password"
+          placeholder="Enter your password"
+        />
+      </UFormGroup>
+
+      <UFormGroup :label="$t('confirmPassword')" name="confirmPassword">
+        <UInput
+          v-model="state.confirmPassword"
+          type="password"
+          placeholder="Confirm your password"
+        />
+      </UFormGroup>
+
+      <UButton type="submit">Sign Up</UButton>
 
       <UAlert
         v-if="error"
@@ -114,7 +122,7 @@ onMounted(() => {
         variant="outline"
         :title="error.message"
       />
-    </div>
+    </UForm>
 
     <div class="mt-8 flex flex-col items-center gap-2">
       <p>You already have an account?</p>

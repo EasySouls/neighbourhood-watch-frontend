@@ -30,6 +30,7 @@ onMounted(() => {
 <template>
   <div>
     <NuxtRouteAnnouncer />
+    <NuxtLoadingIndicator />
     <NuxtLayout>
       <UContainer>
         <NuxtPage />
