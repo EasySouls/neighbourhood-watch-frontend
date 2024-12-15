@@ -8,6 +8,11 @@ export default defineNuxtConfig({
       enabled: true,
     },
   },
+  runtimeConfig: {
+    public: {
+      apiBaseUrl: process.env.API_BASE_URL,
+    },
+  },
   modules: [
     '@nuxt/eslint',
     '@nuxt/ui',

@@ -43,19 +43,22 @@ async function signUpWithEmailAndPassword(event: FormSubmitEvent<Schema>) {
     return;
   }
   try {
-    const res = await fetch('https://localhost:7250/api/identity/register', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        email: email,
-        password: password,
-        firstName: firstName,
-        lastName: lastName,
-      }),
-      credentials: 'include',
-    });
+    const res = await $fetch<Response>(
+      'https://localhost:7250/api/identity/register',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: email,
+          password: password,
+          firstName: firstName,
+          lastName: lastName,
+        }),
+        credentials: 'include',
+      }
+    );
     console.log(res);
     if (!res.ok) {
       const json = await res.json();

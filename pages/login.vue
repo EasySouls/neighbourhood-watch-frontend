@@ -1,17 +1,5 @@
 <script lang="ts" setup>
-import {
-  GoogleAuthProvider,
-  signInAnonymously,
-  signInWithEmailAndPassword,
-  signInWithPopup,
-} from 'firebase/auth';
-import {
-  useCurrentUser,
-  useFirebaseAuth,
-  useIsCurrentUserLoaded,
-} from 'vuefire';
 import { ref, onMounted } from 'vue';
-import { doc, getFirestore, setDoc } from '@firebase/firestore';
 
 useHead({
   title: 'Login',
@@ -23,16 +11,12 @@ definePageMeta({
   order: 0,
 });
 
-const auth = useFirebaseAuth()!; // only exists on client side
-const user = useCurrentUser();
-const isUserLoaded = useIsCurrentUserLoaded();
-
 const toast = useToast();
 
 const email = ref('');
 const password = ref('');
 
-function loginWithEmailAndPassword() {
+async function handleLoginWithEmailAndPassword() {
   error.value = null;
 
   if (!email.value || !password.value) {
@@ -40,52 +24,61 @@ function loginWithEmailAndPassword() {
     return;
   }
 
-  signInWithEmailAndPassword(auth, email.value, password.value)
-    .then(() => {
-      navigateTo('/');
-      toast.add({
-        title: 'Logged in successfully',
-        timeout: 3000,
-      });
-    })
-    .catch((reason) => {
-      toast.add({
-        title: 'Failed to login',
-        description: reason.message,
-        timeout: 3000,
-      });
-      console.error('Failed signInWithEmailAndPassword', reason);
-      error.value = reason;
-    });
-}
+  const res = await $fetch<Response>('/api/identity/login', {
+    method: 'POST',
+    baseURL: useRuntimeConfig().public.apiBaseUrl,
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      email: email.value,
+      password: password.value,
+    }),
+    credentials: 'include',
+  });
 
-async function signinPopup() {
-  error.value = null;
-  try {
-    const { user } = await signInWithPopup(auth, googleAuthProvider);
-    const db = getFirestore();
-    const userRef = doc(db, 'users', user.uid);
-    const firstName = user.displayName?.split(' ')[0];
-    const lastName = user.displayName?.split(' ')[1];
-    await setDoc(userRef, {
-      authId: user.uid,
-      email: user.email,
-      firstName: firstName || 'User',
-      lastName: lastName || '',
-      photoURL: user.photoURL,
-    });
+  if (res.ok) {
+    const data = await res.json();
+    console.log(data);
     toast.add({
       title: 'Logged in successfully',
       timeout: 3000,
     });
-  } catch (reason) {
+    // navigateTo('/');
+  } else {
+    const data = await res.json();
     toast.add({
-      title: 'Failed to login with Google',
+      title: 'Failed to login',
+      description: data.message,
       timeout: 3000,
     });
-    console.error('Failed to sign in with Google', reason);
-    error.value = reason as Error;
+    error.value = new Error(data.message);
   }
+}
+
+async function handleSignInWithGoogle() {
+  error.value = null;
+
+  window.location.href = `${useRuntimeConfig().public.apiBaseUrl}/api/auth/signin/google`;
+
+  // const res = await $fetch<Response>('/api/auth/signin/google', {
+  //   method: 'GET',
+  //   baseURL: useRuntimeConfig().public.apiBaseUrl,
+  //   mode: 'cors',
+  //   credentials: 'include',
+  //   redirect: 'follow',
+  // });
+
+  // if (!res.ok) {
+  //   const data = await res.json();
+  //   throw new Error(data.message);
+  // }
+  // const data = await res.json();
+  // console.log(data);
+  // toast.add({
+  //   title: 'Logged in successfully',
+  //   timeout: 3000,
+  // });
 }
 
 const error = ref<Error | null>(null);
@@ -100,27 +93,11 @@ onMounted(() => {
     });
   }
 });
-
-// Redirect to the home page when the user logs in,
-// or if the user is already logged in.
-watchEffect(() => {
-  if (user.value && auth.currentUser) {
-    navigateTo('/');
-  }
-});
-</script>
-
-<script lang="ts">
-export const googleAuthProvider = new GoogleAuthProvider();
 </script>
 
 <template>
   <main class="p-4 flex flex-col justify-center items-center">
     <h1 class="mt-12 mb-8">{{ $t('login') }}</h1>
-
-    <ClientOnly>
-      <p v-if="!isUserLoaded">Loading</p>
-    </ClientOnly>
 
     <div class="w-80 flex flex-col gap-4">
       <UInput
@@ -135,9 +112,8 @@ export const googleAuthProvider = new GoogleAuthProvider();
         type="password"
         placeholder="Enter your password"
       />
-      <UButton @click="loginWithEmailAndPassword()">Login</UButton>
-      <UButton @click="signinPopup()">Sign in with Google</UButton>
-      <UButton @click="signInAnonymously(auth)">Sign in anonymously</UButton>
+      <UButton @click="handleLoginWithEmailAndPassword()">Login</UButton>
+      <UButton @click="handleSignInWithGoogle()">Sign in with Google</UButton>
 
       <UAlert
         v-if="error"
