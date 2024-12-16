@@ -59,26 +59,26 @@ async function handleLoginWithEmailAndPassword() {
 async function handleSignInWithGoogle() {
   error.value = null;
 
-  window.location.href = `${useRuntimeConfig().public.apiBaseUrl}/api/auth/signin/google`;
+  // window.location.href = `${useRuntimeConfig().public.apiBaseUrl}/api/auth/signin/google`;
 
-  // const res = await $fetch<Response>('/api/auth/signin/google', {
-  //   method: 'GET',
-  //   baseURL: useRuntimeConfig().public.apiBaseUrl,
-  //   mode: 'cors',
-  //   credentials: 'include',
-  //   redirect: 'follow',
-  // });
+  const res = await $fetch<Response>('/api/auth/signin/google', {
+    method: 'POST',
+    baseURL: useRuntimeConfig().public.apiBaseUrl,
+    mode: 'cors',
+    credentials: 'include',
+    redirect: 'follow',
+  });
 
-  // if (!res.ok) {
-  //   const data = await res.json();
-  //   throw new Error(data.message);
-  // }
-  // const data = await res.json();
-  // console.log(data);
-  // toast.add({
-  //   title: 'Logged in successfully',
-  //   timeout: 3000,
-  // });
+  if (!res.ok) {
+    const data = await res.json();
+    throw new Error(data.message);
+  }
+  const data = await res.json();
+  console.log(data);
+  toast.add({
+    title: 'Logged in successfully',
+    timeout: 3000,
+  });
 }
 
 const error = ref<Error | null>(null);
@@ -112,8 +112,12 @@ onMounted(() => {
         type="password"
         placeholder="Enter your password"
       />
-      <UButton @click="handleLoginWithEmailAndPassword()">Login</UButton>
-      <UButton @click="handleSignInWithGoogle()">Sign in with Google</UButton>
+      <UButton @click.prevent="handleLoginWithEmailAndPassword()"
+        >Login</UButton
+      >
+      <UButton @click.prevent="handleSignInWithGoogle()"
+        >Sign in with Google</UButton
+      >
 
       <UAlert
         v-if="error"

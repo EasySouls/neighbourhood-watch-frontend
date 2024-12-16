@@ -1,3 +1,15 @@
+export interface SessionResponse {
+  tokenType: string;
+  accessToken: string;
+  expiresIn: number;
+  refreshToken: string;
+}
+
+export interface Session {
+  user: User;
+  accessToken: string;
+}
+
 export interface User {
   id: string;
   authId: string;
