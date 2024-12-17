@@ -43,32 +43,13 @@ async function signUpWithEmailAndPassword(event: FormSubmitEvent<Schema>) {
     return;
   }
   try {
-    const res = await $fetch<Response>(
-      'https://localhost:7250/api/identity/register',
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: email,
-          password: password,
-          firstName: firstName,
-          lastName: lastName,
-        }),
-        credentials: 'include',
-      }
-    );
-    console.log(res);
-    if (!res.ok) {
-      const json = await res.json();
-      throw new Error(JSON.stringify(json) || 'Failed to sign up');
-    }
+    await signUpWithEmail(firstName, lastName, email, password);
+
     toast.add({
       title: 'Signed up successfully! Log in to continue',
       timeout: 3000,
     });
-    router.push('/login');
+    await router.push('/login');
   } catch (reason) {
     console.error('Failed to sign up', reason);
     error.value = reason as Error;

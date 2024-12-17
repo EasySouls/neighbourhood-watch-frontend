@@ -24,35 +24,24 @@ async function handleLoginWithEmailAndPassword() {
     return;
   }
 
-  const res = await $fetch<Response>('/api/identity/login', {
-    method: 'POST',
-    baseURL: useRuntimeConfig().public.apiBaseUrl,
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      email: email.value,
-      password: password.value,
-    }),
-    credentials: 'include',
-  });
+  try {
+    await signInWithEmail(email.value, password.value);
 
-  if (res.ok) {
-    const data = await res.json();
-    console.log(data);
     toast.add({
       title: 'Logged in successfully',
       timeout: 3000,
     });
-    // navigateTo('/');
-  } else {
-    const data = await res.json();
+    await useRouter().replace('/');
+  } catch (reason) {
+    console.error('Failed to login', reason);
+
     toast.add({
       title: 'Failed to login',
-      description: data.message,
+      description: reason as string,
       timeout: 3000,
     });
-    error.value = new Error(data.message);
+
+    error.value = reason as Error;
   }
 }
 
