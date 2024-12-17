@@ -3,15 +3,14 @@ import type { SessionResponse, User } from '~/types';
 export default defineNuxtRouteMiddleware(async (to, _from) => {
   try {
     const authTokenCookie = useCookie('session').value;
-    const sessionState = useState('session').value;
+    const sessionState = useState<SessionResponse | null>('session');
 
-    const session = sessionState as SessionResponse;
+    const session = sessionState.value;
 
     console.log('session', session);
-    console.log('sessionState', sessionState);
     console.log('authTokenCookie', authTokenCookie);
 
-    const bearerToken = authTokenCookie || session.accessToken;
+    const bearerToken = authTokenCookie || session?.accessToken;
     console.log('bearerToken', bearerToken);
     if (!bearerToken) {
       throw new Error('No auth token found');
@@ -29,7 +28,9 @@ export default defineNuxtRouteMiddleware(async (to, _from) => {
       throw new Error('No user found');
     }
   } catch (e) {
-    console.error(e);
+    if (e instanceof Error) {
+      console.error(e.message);
+    }
     return navigateTo({
       path: '/login',
       query: {

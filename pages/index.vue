@@ -1,6 +1,10 @@
 <script setup lang="ts">
 import { useCivilGuard } from '~/composables/useCivilGuard';
 
+useHead({
+  title: 'Home',
+});
+
 definePageMeta({
   middleware: 'auth',
 });

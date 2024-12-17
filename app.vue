@@ -1,6 +1,10 @@
 <script lang="ts" setup>
 useHead({
-  titleTemplate: '%s - Neighbourhood Watch',
+  titleTemplate: (titleChunk) => {
+    return titleChunk
+      ? `${titleChunk} - Neighbourhood Watch`
+      : 'Neighbourhood Watch';
+  },
   meta: [
     {
       name: 'description',

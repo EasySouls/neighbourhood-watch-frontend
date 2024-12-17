@@ -3,6 +3,10 @@ import { ref } from 'vue';
 import { z } from 'zod';
 import type { FormSubmitEvent } from '#ui/types';
 
+useHead({
+  title: 'Sign Up',
+});
+
 definePageMeta({
   title: 'Sign Up',
   linkTitle: 'Sign Up',
